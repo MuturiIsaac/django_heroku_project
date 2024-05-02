@@ -12,7 +12,10 @@ from .models import Ticket, Comment
 from .forms import CommentForm
 from .mixins import ClientRequiredMixin,StaffRequiredMixin,UserPassesTestMixin
 from django.views.generic.edit import CreateView
+from django.shortcuts import render
 
+def home_view(request):
+    return render(request, 'home.html')
 
 def client_register(request):
     if request.method == 'POST':
