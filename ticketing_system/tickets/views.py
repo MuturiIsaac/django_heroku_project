@@ -10,6 +10,8 @@ from django.views.generic.edit import UpdateView
 from .forms import TicketStatusUpdateForm
 from .models import Ticket, Comment
 from .forms import CommentForm
+from .mixins import ClientRequiredMixin,StaffRequiredMixin,UserPassesTestMixin
+from django.views.generic.edit import CreateView
 
 
 def client_register(request):
@@ -50,7 +52,7 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
     template_name = 'tickets/ticket_detail.html'
     context_object_name = 'ticket'      
     
-class TicketStatusUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class TicketStatusUpdateView(LoginRequiredMixin, StaffRequiredMixin,  UserPassesTestMixin, UpdateView):
     model = Ticket
     form_class = TicketStatusUpdateForm
     template_name = 'tickets/ticket_status_update.html'
@@ -83,4 +85,14 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
             comment.ticket = ticket
             comment.user = request.user
             comment.save()
-        return self.get(request, *args, **kwargs)
+            return self.get(request, *args, **kwargs)
+    
+class TicketCreateView(LoginRequiredMixin, ClientRequiredMixin, CreateView):
+    model = Ticket
+    fields = ['title', 'description', 'company']
+    template_name = 'tickets/ticket_form.html'
+    success_url = '/tickets/list/'
+
+    def form_valid(self, form):
+        form.instance.client = self.request.user
+        return super().form_valid(form)

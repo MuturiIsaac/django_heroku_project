@@ -1,5 +1,5 @@
 from django import forms
-from .models import Ticket
+from .models import Ticket , Comment
 
 class TicketStatusUpdateForm(forms.ModelForm):
     class Meta:
