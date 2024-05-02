@@ -5,10 +5,12 @@ from .models import UserProfile
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.views.generic import DetailView
-from .models import Ticket
 from django.urls import reverse_lazy
 from django.views.generic.edit import UpdateView
 from .forms import TicketStatusUpdateForm
+from .models import Ticket, Comment
+from .forms import CommentForm
+
 
 def client_register(request):
     if request.method == 'POST':
@@ -61,3 +63,24 @@ class TicketStatusUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView
     def form_valid(self, form):
         form.instance.assigned_to = self.request.user if self.request.user.profile.is_staff else None
         return super().form_valid(form)
+    
+class TicketDetailView(LoginRequiredMixin, DetailView):
+    model = Ticket
+    template_name = 'tickets/ticket_detail.html'
+    context_object_name = 'ticket'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = Comment.objects.filter(ticket=self.object)
+        context['comment_form'] = CommentForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        ticket = self.get_object()
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.ticket = ticket
+            comment.user = request.user
+            comment.save()
+        return self.get(request, *args, **kwargs)
