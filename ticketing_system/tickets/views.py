@@ -6,6 +6,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.views.generic import DetailView
 from .models import Ticket
+from django.urls import reverse_lazy
+from django.views.generic.edit import UpdateView
+from .forms import TicketStatusUpdateForm
 
 def client_register(request):
     if request.method == 'POST':
@@ -44,3 +47,17 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
     model = Ticket
     template_name = 'tickets/ticket_detail.html'
     context_object_name = 'ticket'      
+    
+class TicketStatusUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Ticket
+    form_class = TicketStatusUpdateForm
+    template_name = 'tickets/ticket_status_update.html'
+    success_url = reverse_lazy('ticket_list')
+
+    def test_func(self):
+        ticket = self.get_object()
+        return self.request.user.profile.is_staff or ticket.client == self.request.user
+
+    def form_valid(self, form):
+        form.instance.assigned_to = self.request.user if self.request.user.profile.is_staff else None
+        return super().form_valid(form)
