@@ -2,5 +2,22 @@
 
 {% block content %}
     <h1>Welcome to the Ticketing System</h1>
-    <p>This is the homepage.</p>
+    <p>
+        This is a ticketing system where clients can submit tickets for their issues or requests,
+        and staff members can manage and resolve these tickets.
+    </p>
+    <p>
+        {% if user.is_authenticated %}
+            {% if user.profile.is_staff %}
+                You are logged in as a staff member. <a href="{% url 'ticket_list' %}">View Assigned Tickets</a>
+            {% else %}
+                You are logged in as a client. <a href="{% url 'ticket_create' %}">Submit a New Ticket</a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'client_register' %}">Register as a Client</a> or
+            <a href="{% url 'staff_register' %}">Register as Staff</a> to get started.
+            <br>
+            If you already have an account, <a href="{% url 'login' %}">Login here</a>.
+        {% endif %}
+    </p>
 {% endblock %}
