@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Staff Dashboard</h1>
+    <p>Welcome, {{ user.username }}!</p>
+    <p><a href="{% url 'ticket_list' %}">View All Tickets</a></p>
+{% endblock %}

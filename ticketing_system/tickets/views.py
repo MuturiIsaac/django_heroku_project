@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
@@ -12,10 +13,18 @@ from .models import Ticket, Comment
 from .forms import CommentForm
 from .mixins import ClientRequiredMixin,StaffRequiredMixin,UserPassesTestMixin
 from django.views.generic.edit import CreateView
-from django.shortcuts import render
+
 
 def home_view(request):
     return render(request, 'home.html')
+
+@login_required
+def client_dashboard(request):
+    return render(request, 'client_dashboard.html')
+
+@login_required
+def staff_dashboard(request):
+    return render(request, 'staff_dashboard.html')
 
 def client_register(request):
     if request.method == 'POST':
@@ -23,7 +32,7 @@ def client_register(request):
         if form.is_valid():
             user = form.save()
             UserProfile.objects.create(user=user, is_staff=False)
-            return redirect('login')
+            return redirect('client_dashboard')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -34,7 +43,7 @@ def staff_register(request):
         if form.is_valid():
             user = form.save()
             UserProfile.objects.create(user=user, is_staff=True)
-            return redirect('login')
+            return redirect('staff_dashboard')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
